@@ -127,7 +127,7 @@ INSTALLED_APPS.extend([
     'logentry_admin',
     'djangocms_helpers',
     'djangocms_helpers.divio',  # fixes a bug in divio aldryn commands
-    'djangocms_helpers.sentry_500_error_handler',
+    # 'djangocms_helpers.sentry_500_error_handler',
 
     'robots',
 
