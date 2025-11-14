@@ -1,39 +1,32 @@
-# Python compiled files
-*.pyc
-*.pyo
-__pycache__/
-
-# Data and media
-/data
-/backend/static_collected
-
-# Environment files
-/backend/.local-env
-.env
-.env.local
-
-# Node modules (but keep dist!)
-/frontend/node_modules
-
-# Development
-/backend/addons-dev
+# Docker ignore for 3web project
 
 # Git
 .git
 .gitignore
 
-# Documentation
-*.md
-!README.md
-
 # IDE
-.vscode/
-.idea/
+.idea
+*.iml
 
-# Logs
-*.log
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
 
-# Tests
-.pytest_cache/
-.coverage
-htmlcov/
+# Node
+node_modules/
+frontend/node_modules/
+npm-debug.log
+yarn-error.log
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Other
+.DS_Store
