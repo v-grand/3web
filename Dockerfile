@@ -13,13 +13,29 @@ FROM python:3.10-slim as django-build
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gettext \
     gcc \
+    g++ \
+    make \
+    libpq-dev \
+    libxml2-dev \
+    libxslt1-dev \
+    zlib1g-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    liblcms2-dev \
+    libwebp-dev \
+    libharfbuzz-dev \
+    libfribidi-dev \
+    tcl-dev \
+    tk-dev \
+    python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app/
 
 # Install Python dependencies
 COPY backend/requirements.txt /app/backend/requirements.txt
-RUN pip install -r /app/backend/requirements.txt
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install -r /app/backend/requirements.txt
 
 # Copy application code
 COPY . /app/
