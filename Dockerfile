@@ -1,8 +1,12 @@
 # syntax=docker/dockerfile:1
 FROM node:20-slim AS frontend-build
 WORKDIR /build
+
+# Increase memory for Node
+ENV NODE_OPTIONS="--max-old-space-size=2048"
+
 COPY frontend/package.json frontend/yarn.lock ./
-RUN yarn install --pure-lockfile --network-timeout 100000
+RUN yarn install --pure-lockfile --network-timeout 300000 --ignore-engines
 COPY frontend/ .
 RUN yarn run build
 
@@ -13,29 +17,15 @@ FROM python:3.10-slim as django-build
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gettext \
     gcc \
-    g++ \
-    make \
-    libpq-dev \
-    libxml2-dev \
-    libxslt1-dev \
-    zlib1g-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    liblcms2-dev \
-    libwebp-dev \
-    libharfbuzz-dev \
-    libfribidi-dev \
-    tcl-dev \
-    tk-dev \
-    python3-dev \
+    libpq5 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app/
 
-# Install Python dependencies
+# Install Python dependencies with pip cache to speed up and reduce memory
 COPY backend/requirements.txt /app/backend/requirements.txt
-RUN pip install --upgrade pip setuptools wheel && \
-    pip install -r /app/backend/requirements.txt
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r /app/backend/requirements.txt
 
 # Copy application code
 COPY . /app/
