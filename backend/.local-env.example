@@ -1,0 +1,43 @@
+# Django Settings
+DEBUG=True
+SECRET_KEY=your-secret-key-here-change-in-production
+STAGE=local
+
+# Database
+# For local development with docker-compose, use:
+DATABASE_URL=postgres://postgres@db:5432/db
+# Or for SQLite (without docker):
+# DATABASE_URL=sqlite:///db.sqlite3
+
+# Domain settings
+DOMAIN=localhost
+SITE_NAME=3web Local Development
+
+# Email settings (console backend for development)
+EMAIL_URL=console://
+
+# Cache (dummy for development)
+CACHE_URL=dummy://
+
+# Static/Media storage
+DEFAULT_STORAGE_DSN=file:///data/media/?url=%2Fmedia%2F
+
+# Security (disable SSL redirect in development)
+SECURE_SSL_REDIRECT=False
+HTTP_PROTOCOL=http
+
+# Sentry (optional, for error tracking)
+# SENTRY_DSN=
+
+# Google Maps API (optional)
+# DJANGOCMS_GOOGLEMAP_API_KEY=
+
+# Algolia Search (optional)
+# ALGOLIA_APPLICATION_ID=
+# ALGOLIA_API_KEY=
+# ALGOLIA_API_KEY_READ_ONLY=
+
+# Divio SSO (optional, for cloud deployments)
+# SSO_DSN=
+# ALDRYN_SSO_ENABLE_SSO_LOGIN=False
+# ALDRYN_SSO_ALWAYS_REQUIRE_LOGIN=False

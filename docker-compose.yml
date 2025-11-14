@@ -1,47 +1,43 @@
 version: '3.8'
 
-# Live Mode
-# firstly remove /static_collected from .dockerignore
-# then follow the guide - https://docs.divio.com/en/latest/how-to/local-in-live-configuration/
+# Production/Live Mode
 services:
     web:
         build:
             context: '.'
             dockerfile: Dockerfile
+        restart: unless-stopped
         ports:
-            - '8000:80'
+            - '80:80'
         volumes:
-            - '.:/app:rw'
             - './data:/data:rw'
-        command: python manage.py runserver 0.0.0.0:80
         env_file: backend/.local-env
         depends_on:
-            - db
+            db:
+                condition: service_healthy
         networks:
             - app-network
-        healthcheck:
-            test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:80')"]
-            interval: 30s
-            timeout: 10s
-            retries: 3
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "10m"
+                max-file: "3"
 
-    frontend:
-        build:
-            context: '.'
-            dockerfile: frontend.Dockerfile
-        ports:
-            - '8090:8090'
-        volumes:
-            - './frontend:/app:rw'
-            # We want to ignore an existing frontend/node_modules
-            # this allows a host-system yarn install and a docker based yarn work
-            # side by side
-            # read more at https://stackoverflow.com/questions/29181032/add-a-volume-to-docker-but-exclude-a-sub-folder
-            - '/app/node_modules/'  # remove node_modules from the volume content
-        working_dir: /app
-        command: yarn webpack-dev-server-in-docker
-        networks:
-            - app-network
+    # Frontend service disabled for production - static files are built into web image
+    # Uncomment for development with hot-reload:
+    # frontend:
+    #     build:
+    #         context: '.'
+    #         dockerfile: frontend.Dockerfile
+    #     ports:
+    #         - '8090:8090'
+    #     volumes:
+    #         - './frontend:/app:rw'
+    #         - '/app/node_modules/'
+    #     working_dir: /app
+    #     command: yarn webpack-dev-server-in-docker
+    #     networks:
+    #         - app-network
 
     db:
         image: postgres:16-alpine

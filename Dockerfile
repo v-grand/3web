@@ -2,8 +2,7 @@
 FROM node:20-slim AS frontend-build
 WORKDIR /build
 COPY frontend/package.json frontend/yarn.lock ./
-RUN --mount=type=cache,target=/usr/local/share/.cache/yarn \
-    yarn install --pure-lockfile --network-timeout 100000
+RUN yarn install --pure-lockfile --network-timeout 100000
 COPY frontend/ .
 RUN yarn run build
 
@@ -18,10 +17,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app/
 
-# Install Python dependencies with cache mount
+# Install Python dependencies
 COPY backend/requirements.txt /app/backend/requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --no-deps -r /app/backend/requirements.txt
+RUN pip install --no-deps -r /app/backend/requirements.txt
 
 # Copy application code
 COPY . /app/

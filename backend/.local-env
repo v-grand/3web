@@ -1,16 +1,28 @@
-DEBUG=True
-STAGE=local
-DATABASE_URL=postgres://postgres@db:5432/db
-HTTP_PROTOCOL=http
-SECURE_SSL_REDIRECT=false
-# IS_RUN_FRONTEND_IN_DOCKER=true
+# Production Configuration
+# IMPORTANT: Change these values before deploying!
 
-# IS_LINK_ALL_DEV=true
+DEBUG=False
+STAGE=live
 
+# Generate a new SECRET_KEY: python3 -c 'import secrets; print(secrets.token_urlsafe(50))'
+SECRET_KEY=CHANGE_THIS_TO_STRONG_RANDOM_SECRET_KEY_MIN_50_CHARS
 
-# for a simulation of a live environment:
-# DEBUG=False
-# STAGE=live
-# DEBUG_PROPAGATE_EXCEPTIONS = True
-# SSO_DSN=https://user:pass@control.divio.com/auth/
-# DOMAIN=djangocms-template.0.0.0.0.nip.io
+# Database - use strong password!
+DATABASE_URL=postgres://postgres:CHANGE_STRONG_DB_PASSWORD@db:5432/db
+
+# Your domain
+DOMAIN=your-domain.com
+SITE_NAME=3web Production
+
+# Email
+EMAIL_URL=console://
+
+# Security
+HTTP_PROTOCOL=https
+SECURE_SSL_REDIRECT=true
+
+# Optional: Sentry for error monitoring
+# SENTRY_DSN=
+
+# Storage
+DEFAULT_STORAGE_DSN=file:///data/media/?url=%2Fmedia%2F
