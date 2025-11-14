@@ -19,7 +19,7 @@ WORKDIR /app/
 
 # Install Python dependencies
 COPY backend/requirements.txt /app/backend/requirements.txt
-RUN pip install --no-deps -r /app/backend/requirements.txt
+RUN pip install -r /app/backend/requirements.txt
 
 # Copy application code
 COPY . /app/
