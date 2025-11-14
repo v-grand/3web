@@ -44,4 +44,4 @@ ENV PORT=80 \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
-CMD ["uwsgi", "--http=0.0.0.0:80", "--module=backend.wsgi", "--master", "--workers=2", "--max-requests=5000", "--lazy-apps", "--need-app", "--http-keepalive", "--harakiri=65", "--vacuum", "--strict", "--single-interpreter", "--die-on-term", "--disable-logging", "--log-4xx", "--log-5xx", "--cheaper=1", "--enable-threads", "--ignore-sigpipe", "--ignore-write-errors"]
+CMD ["uwsgi", "--http=0.0.0.0:80", "--module=backend.wsgi", "--master", "--workers=2", "--max-requests=5000", "--lazy-apps", "--need-app", "--http-keepalive", "--harakiri=65", "--vacuum", "--strict", "--single-interpreter", "--die-on-term", "--log-4xx", "--log-5xx", "--cheaper=1", "--enable-threads", "--ignore-sigpipe", "--ignore-write-errors"]
