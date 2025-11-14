@@ -12,7 +12,7 @@ skip = [
 
 
 [tool.black]
-target-version = ['py38']
+target-version = ['py310']
 skip-string-normalization = true
 line-length = 97
 exclude = '''

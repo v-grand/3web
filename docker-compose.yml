@@ -1,4 +1,4 @@
-version: '2'
+version: '3.8'
 
 # Live Mode
 # firstly remove /static_collected from .dockerignore
@@ -15,6 +15,15 @@ services:
             - './data:/data:rw'
         command: python manage.py runserver 0.0.0.0:80
         env_file: backend/.local-env
+        depends_on:
+            - db
+        networks:
+            - app-network
+        healthcheck:
+            test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:80')"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
 
     frontend:
         build:
@@ -31,14 +40,30 @@ services:
             - '/app/node_modules/'  # remove node_modules from the volume content
         working_dir: /app
         command: yarn webpack-dev-server-in-docker
+        networks:
+            - app-network
 
     db:
-        image: postgres:13.5-alpine
+        image: postgres:16-alpine
         ports:
             - '5432:5432'
         environment:
             POSTGRES_DB: 'db'
             POSTGRES_HOST_AUTH_METHOD: trust
         volumes:
-            - '.:/app:rw'
+            - 'postgres_data:/var/lib/postgresql/data'
+        networks:
+            - app-network
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+networks:
+    app-network:
+        driver: bridge
+
+volumes:
+    postgres_data:
 

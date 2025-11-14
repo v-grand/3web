@@ -214,6 +214,13 @@ MIDDLEWARE = [
 DATABASE_URL = env.str('DATABASE_URL', default=f'sqlite:///{BASE_DIR}/db.sqlite')
 DATABASES = {'default': dj_database_url.parse(DATABASE_URL)}
 
+# Database optimization
+if not DEBUG:
+    DATABASES['default']['CONN_MAX_AGE'] = 600  # Connection pooling
+    DATABASES['default']['OPTIONS'] = {
+        'connect_timeout': 10,
+    }
+
 
 AUTH_USER_MODEL = 'backend_auth.User'
 
@@ -437,16 +444,20 @@ REST_FRAMEWORK = {
 
 if not DEBUG:
     CSRF_COOKIE_SECURE = True
-    CSRF_COOKIE_SAMESITE = 'None'
+    CSRF_COOKIE_SAMESITE = 'Lax'  # Changed from None for better security
 
     SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_BROWSER_XSS_FILTER = True  # Added XSS protection
+    SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'  # Added referrer policy
 
     SESSION_COOKIE_SECURE = True
-    SESSION_COOKIE_SAMESITE = 'None'
+    SESSION_COOKIE_SAMESITE = 'Lax'  # Changed from None
     SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_AGE = 1209600  # 2 weeks
 
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True  # Added HSTS preload
 
 
 # CSP settings have to be updated if some external media source is used

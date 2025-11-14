@@ -15,9 +15,30 @@ const config = {
         component_demo: './components/demo-plugin/index.js',
     },
     output: {
-        filename: '[name].js',
+        filename: isDevelopmentMode ? '[name].bundle.js' : '[name].[contenthash:8].js',
         path: __dirname + '/dist/',
         publicPath: '/static/dist/',
+        clean: true,  // Clean dist folder before build
+    },
+    cache: {
+        type: 'filesystem',  // Enable persistent caching
+        buildDependencies: {
+            config: [__filename],
+        },
+    },
+    optimization: {
+        moduleIds: 'deterministic',
+        runtimeChunk: 'single',
+        splitChunks: {
+            cacheGroups: {
+                vendor: {
+                    test: /[\\/]node_modules[\\/]/,
+                    name: 'vendors',
+                    priority: -10,
+                    reuseExistingChunk: true,
+                },
+            },
+        },
     },
     module: {
         rules: [
@@ -119,14 +140,22 @@ const config = {
         allowedHosts: [
             '.nip.io',
             '127.0.0.1',
-            '0.0.0.0'
+            '0.0.0.0',
+            'localhost'
         ],
         hot: true, // HMR
         host: '0.0.0.0',
         port: 8090,
         headers: {
             'Access-Control-Allow-Origin': '*',
-        }
+        },
+        compress: true,  // Enable gzip compression
+        client: {
+            overlay: {
+                errors: true,
+                warnings: false,
+            },
+        },
     },
     plugins: [
         new VueLoaderPlugin(),
@@ -141,6 +170,13 @@ if (isDevelopmentMode) {
     // config.devtool = 'source-map';
     config.output.filename = '[name].bundle.js';
     config.output.publicPath = 'http://localhost:8090/';
+} else {
+    // Production optimizations
+    config.performance = {
+        hints: 'warning',
+        maxEntrypointSize: 512000,
+        maxAssetSize: 512000,
+    };
 }
 
 const isDockerMode = process.env.NODE_ENV === 'docker';

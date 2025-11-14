@@ -1,31 +1,46 @@
-FROM node:18.17.1 AS frontend-build
-COPY frontend/package.json .
-COPY frontend/yarn.lock .
-RUN yarn install --pure-lockfile
+# syntax=docker/dockerfile:1
+FROM node:20-slim AS frontend-build
+WORKDIR /build
+COPY frontend/package.json frontend/yarn.lock ./
+RUN --mount=type=cache,target=/usr/local/share/.cache/yarn \
+    yarn install --pure-lockfile --network-timeout 100000
 COPY frontend/ .
 RUN yarn run build
 
 
-FROM python:3.10.6 as django-build
+FROM python:3.10-slim as django-build
 
-RUN apt-get update && apt-get install -y gettext
-
-COPY backend/requirements.txt /app/backend/requirements.txt
-RUN pip install --no-deps --no-cache-dir -r /app/backend/requirements.txt
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gettext \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app/
+
+# Install Python dependencies with cache mount
+COPY backend/requirements.txt /app/backend/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-deps -r /app/backend/requirements.txt
+
+# Copy application code
 COPY . /app/
-# copies over the compiled sources from node image above
-COPY --from=frontend-build /dist /app/frontend/dist
 
-RUN python manage.py collectstatic --noinput --ignore=node_modules
-RUN python manage.py compilemessages
+# Copy compiled frontend assets
+COPY --from=frontend-build /build/dist /app/frontend/dist
 
+# Collect static files and compile messages
+RUN python manage.py collectstatic --noinput --ignore=node_modules && \
+    python manage.py compilemessages
 
-ENV PORT=80
-CMD uwsgi --http=0.0.0.0:$PORT --module=backend.wsgi --master --workers=4 --max-requests=1000 --lazy-apps --need-app --http-keepalive --harakiri 65 --vacuum --strict --single-interpreter --die-on-term --disable-logging --log-4xx --log-5xx --cheaper=2 --enable-threads 
-# some explanations
-# --strict means that uwsgi will quit if the app cannot startup, respectively throws an error on startup. That's convenient because of clear log entries.
-# the number of workers depend on how many CPU cores and how much memory the server has. For example, on a 4 core with 4GB RAM, if one worker takes 200MB of RAM, you can try 4 to 8 workers.
-# see https://www.techatbloomberg.com/blog/configuring-uwsgi-production-deployment/ to explain some of these settings
-# https://uwsgi-docs.readthedocs.io/en/latest/articles/TheArtOfGracefulReloading.html#preforking-vs-lazy-apps-vs-lazy
+# Runtime configuration
+ENV PORT=80 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+CMD uwsgi --http=0.0.0.0:$PORT --module=backend.wsgi --master --workers=4 --max-requests=5000 --max-requests-delta=1000 --lazy-apps --need-app --http-keepalive --harakiri 65 --vacuum --strict --single-interpreter --die-on-term --disable-logging --log-4xx --log-5xx --cheaper=2 --enable-threads --ignore-sigpipe --ignore-write-errors
+# Optimizations:
+# --max-requests=5000 with delta=1000: Improved worker recycling to prevent memory leaks
+# --ignore-sigpipe --ignore-write-errors: Better handling of client disconnections
+# --lazy-apps: Load app after fork for better memory efficiency
+# --cheaper=2: Dynamic worker spawning for resource optimization

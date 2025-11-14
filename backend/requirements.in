@@ -1,11 +1,11 @@
 django-cms<4
-django<4.3
+django<5.2  # Updated to Django 5.1 LTS
 boto3  # for (optional) s3 storage
-psycopg2  # postgresql support
+psycopg2-binary  # postgresql support with binary package
 python-dotenv
 pip-tools
 uwsgi
-whitenoise  # serving static files
+whitenoise[brotli]  # serving static files with Brotli compression
 
 django_storage_url
 dj-database-url
