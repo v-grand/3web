@@ -8,7 +8,7 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 COPY frontend/package.json frontend/yarn.lock ./
 RUN yarn install --pure-lockfile --network-timeout 300000
 COPY frontend/ .
-RUN NODE_ENV=production yarn build
+RUN cd /build && NODE_ENV=production npx webpack --config webpack.config.js
 
 
 FROM python:3.10-slim AS django-build
