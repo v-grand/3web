@@ -61,9 +61,16 @@ DEBUG_PROPAGATE_EXCEPTIONS = env.bool('DEBUG_PROPAGATE_EXCEPTIONS', default=Fals
 # this is set by Divio environment automatically
 SECRET_KEY = env.str('SECRET_KEY', default="this-is-not-very-random")
 
-ALLOWED_HOSTS = [env.str('DOMAIN', default=""),]
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['.localhost', '127.0.0.1', '[::1]'])
+
+# Добавляем домен из переменной окружения, если он есть
+DOMAIN = env.str('DOMAIN', default=None)
+if DOMAIN:
+    ALLOWED_HOSTS.append(f'.{DOMAIN}')
+
+# В режиме отладки разрешаем все хосты
 if DEBUG:
-    ALLOWED_HOSTS = ["*",]
+    ALLOWED_HOSTS = ["*"]
 
 SITE_ID = env.int('SITE_ID', default=1)
 
