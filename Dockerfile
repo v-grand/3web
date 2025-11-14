@@ -1,12 +1,25 @@
 # syntax=docker/dockerfile:1
-# Build from pre-compiled frontend assets
+FROM node:20-slim AS frontend-build
+WORKDIR /build
+
+# Increase memory for Node
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
+COPY frontend/package.json frontend/yarn.lock ./
+RUN yarn install --pure-lockfile --network-timeout 300000
+COPY frontend/ .
+RUN yarn run build
+
+
 FROM python:3.10-slim as django-build
 
-# Install system dependencies
+# Install system dependencies for building packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gettext \
     gcc \
-    libpq5 \
+    g++ \
+    libpq-dev \
+    python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app/
@@ -14,14 +27,13 @@ WORKDIR /app/
 # Install Python dependencies
 COPY backend/requirements.txt /app/backend/requirements.txt
 RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r /app/backend/requirements.txt
+    pip install -r /app/backend/requirements.txt
 
 # Copy application code
 COPY . /app/
 
-# Copy pre-built frontend assets (build locally first!)
-# If frontend/dist doesn't exist, create empty dir
-RUN mkdir -p /app/frontend/dist
+# Copy compiled frontend assets
+COPY --from=frontend-build /build/dist /app/frontend/dist
 
 # Collect static files and compile messages
 RUN python manage.py collectstatic --noinput --ignore=node_modules && \
